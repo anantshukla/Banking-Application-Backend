@@ -1,3 +1,3 @@
 flask run
 
-run application i localhost:5000
+run application in localhost:5000
