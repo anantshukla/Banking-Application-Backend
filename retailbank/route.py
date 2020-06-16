@@ -1,6 +1,6 @@
 from flask import Flask,jsonify,request
 from retailbank import app,db
-from retailbank.models import Userstore, Customer, account_status_schema, Customer_status, account_schema, accounts_schema, customer_schema, customer_status_schema, Account, Account_status, Transcation
+from retailbank.models import Userstore, Customer, account_status_schema, transcation_schema, Customer_status, account_schema, accounts_schema, customer_schema, customer_status_schema, Account, Account_status, Transcation
 import datetime
 import uuid
 
@@ -397,11 +397,8 @@ def deposit():
             acct_details = Account.query.filter_by(ws_acct_id=data.get('ws_acct_id')).first()
             acct_details.ws_acct_balance += float(data.get('amount'))
             acct_status_index = Account_status.query.count()+100000000
-            acct_status = Account_status(ws_acct_id=data.get('ws_acct_id'), ws_cust_id=acct_details.ws_cust_id, ws_status="Active", ws_cust_msg="Depositing money success",
-            ws_cust_lup=datetime.datetime.now(), acct_status_index=acct_status_index, ws_acct_type=acct_details.ws_acct_type)
-            tranx_id = Transcation.query.count()+100000000
             transcation = Transcation(ws_cust_id=acct_details.ws_cust_id, ws_acct_type=acct_details.ws_acct_type, ws_amt=float(data.get('amount')),
-            ws_trxn_date=datetime.datetime.now(), ws_src_typ='d', ws_tgt_typ=acct_details.ws_acct_type, trxn_id= tranx_id)
+            ws_trxn_date=datetime.datetime.now(), ws_src_typ='d', ws_tgt_typ=acct_details.ws_acct_type, trxn_id= tranx_id,description="Deposite")
             db.session.add(acct_status)      # Making new status entry with reactivation status
             db.session.add(transcation)
             db.session.commit() 
@@ -432,12 +429,9 @@ def withdraw():
                     account.ws_acct_balance -= float(data.get('amount'))
                     tranx_id = Transcation.query.count()+100000000
                     transcation = Transcation(ws_cust_id=account.ws_cust_id, ws_acct_type=account.ws_acct_type, ws_amt=float(data.get('amount')),
-                    ws_trxn_date=datetime.datetime.now(), ws_src_typ=account.ws_acct_type, ws_tgt_typ='w', trxn_id= tranx_id)
-                    acct_status_index = Account_status.query.count()+100000000
-                    acct_status = Account_status(ws_acct_id=data.get('ws_acct_id'), ws_cust_id=account.ws_cust_id, ws_status="Active", ws_cust_msg="Withdrawing money success",
-                    ws_cust_lup=datetime.datetime.now(), acct_status_index=acct_status_index, ws_acct_type=account.ws_acct_type)
+                    ws_trxn_date=datetime.datetime.now(), ws_src_typ=account.ws_acct_type, ws_tgt_typ='w', trxn_id= tranx_id,description="Withdraw")
+             
                     db.session.add(transcation)
-                    db.session.add(acct_status)
                     db.session.commit()
                     return jsonify({'status':True, 'balance':account.ws_acct_balance})
 
@@ -448,12 +442,9 @@ def withdraw():
                     account.ws_acct_balance -= float(data.get('amount'))
                     tranx_id = Transcation.query.count()+100000000
                     transcation = Transcation(ws_cust_id=account.ws_cust_id, ws_acct_type=account.ws_acct_type, ws_amt=float(data.get('amount')),
-                    ws_trxn_date=datetime.datetime.now(), ws_src_typ=account.ws_acct_type, ws_tgt_typ='w', trxn_id= tranx_id)
-                    acct_status_index = Account_status.query.count()+100000000
-                    acct_status = Account_status(ws_acct_id=data.get('ws_acct_id'), ws_cust_id=account.ws_cust_id, ws_status="Active", ws_cust_msg="Withdrawing money success",
-                    ws_cust_lup=datetime.datetime.now(), acct_status_index=acct_status_index, ws_acct_type=account.ws_acct_type)
+                    ws_trxn_date=datetime.datetime.now(), ws_src_typ=account.ws_acct_type, ws_tgt_typ='w', trxn_id= tranx_id,description="Withdraw")
+                   
                     db.session.add(transcation)
-                    db.session.add(acct_status)
                     db.session.commit()
                     return jsonify({'status':True, 'balance':account.ws_acct_balance})
 
@@ -489,16 +480,13 @@ def transfer():
                             current_account.ws_acct_balance += float(data.get('amount'))            # Credicting amount in current account
                             tranx_id1 = Transcation.query.count()+100000000
                             transcation1 = Transcation(ws_cust_id=saving_account.ws_cust_id, ws_acct_type=src_type, ws_amt=float(data.get('amount')),
-                            ws_trxn_date=datetime.datetime.now(), ws_src_typ=src_type, ws_tgt_typ=trg_type, trxn_id= tranx_id1)
-                            acct_status_index1 = Account_status.query.count()+100000000
-                            acct_status1 = Account_status(ws_acct_id=saving_account.ws_acct_id, ws_cust_id=saving_account.ws_cust_id, ws_status="Active", ws_cust_msg="Transfer money success",
-                            ws_cust_lup=datetime.datetime.now(), acct_status_index=acct_status_index1, ws_acct_type=src_type)
+                            ws_trxn_date=datetime.datetime.now(), ws_src_typ=src_type, ws_tgt_typ=trg_type, trxn_id= tranx_id1,description="Transfer")
+                            
 
                             tranx_id2 = Transcation.query.count()+100000000
                             transcation2 = Transcation(ws_cust_id=current_account.ws_cust_id, ws_acct_type=trg_type, ws_amt=float(data.get('amount')),
-                            ws_trxn_date=datetime.datetime.now(), ws_src_typ=src_type, ws_tgt_typ=trg_type, trxn_id= tranx_id2)
+                            ws_trxn_date=datetime.datetime.now(), ws_src_typ=src_type, ws_tgt_typ=trg_type, trxn_id= tranx_id2,description="Transfer")
                             db.session.add(transcation1)        # Adding entry for saving account in Transaction table
-                            db.session.add(acct_status1)        # Updating account status table
                             db.session.add(transcation2)        # Adding entry for current account in Transaction table
                             db.session.commit()
                             return jsonify({'status':True, 'message':"Transfer completed"})
@@ -512,16 +500,13 @@ def transfer():
                         saving_account.ws_acct_balance += float(data.get('amount'))             # Credicting money in saving account
                         tranx_id1 = Transcation.query.count()+100000000
                         transcation1 = Transcation(ws_cust_id=current_account.ws_cust_id, ws_acct_type=src_type, ws_amt=float(data.get('amount')),
-                        ws_trxn_date=datetime.datetime.now(), ws_src_typ=src_type, ws_tgt_typ=trg_type, trxn_id= tranx_id1)
-                        acct_status_index1 = Account_status.query.count()+100000000
-                        acct_status1 = Account_status(ws_acct_id=current_account.ws_acct_id, ws_cust_id=current_account.ws_cust_id, ws_status="Active", ws_cust_msg="Transfer money success",
-                        ws_cust_lup=datetime.datetime.now(), acct_status_index=acct_status_index1, ws_acct_type=src_type)
+                        ws_trxn_date=datetime.datetime.now(), ws_src_typ=src_type, ws_tgt_typ=trg_type, trxn_id= tranx_id1,description="Transfer")
+                        
 
                         tranx_id2 = Transcation.query.count()+100000000
                         transcation2 = Transcation(ws_cust_id=current_account.ws_cust_id, ws_acct_type=trg_type, ws_amt=float(data.get('amount')),
-                        ws_trxn_date=datetime.datetime.now(), ws_src_typ=src_type, ws_tgt_typ=trg_type, trxn_id= tranx_id2)
+                        ws_trxn_date=datetime.datetime.now(), ws_src_typ=src_type, ws_tgt_typ=trg_type, trxn_id= tranx_id2,description="Transfer")
                         db.session.add(transcation1)            # Adding entry for current account
-                        db.session.add(acct_status1)            # Updating account status table
                         db.session.add(transcation2)            # Adding entry for saving account
                         db.session.commit()
                         return jsonify({'status':True, 'message':"Transfer completed"})
@@ -536,6 +521,46 @@ def transfer():
         
 
         
+        return jsonify({'status':False,'message':'Not authorized'})
+    
+    return jsonify({'status':False,'message':'Not authenticated'})
+
+
+############ API for Transaction ###############
+
+@app.route("/transactionhistory", methods=["POST"])    
+def transactionhistory():
+    data = request.get_json()
+    token = data.get("token")
+    user = Userstore.query.filter_by(token=token).first()    # Checking for authentication with token
+    if user:
+        if user.user_role =='cashier' or user.user_role =='teller':    # Checking authorization with user_role
+            if Account_status.query.filter_by(ws_acct_id=data.get('ws_acct_id')).first().ws_status=="Active":
+                acct = Account.query.filter_by(ws_acct_id=data.get('ws_acct_id')).first()
+                cust_id = acct.ws_cust_id
+                acct_type = acct.ws_acct_type
+                if data.get('type')=="no":
+                    totaltransaction = int(data.get('number'))
+                    trax_details = Transcation.query.filter_by(ws_cust_id=cust_id,ws_acct_type=acct_type).order_by(Transcation.trxn_id).limit(totaltransaction)
+                    result = transcation_schema.dump(trax_details)
+                    return jsonify({'status':True,'result':result})
+
+                fromdate = data.get('from')
+                todate = data.get('to')
+                format_str = '%m/%d/%Y'
+                fromdate_obj = datetime.datetime.strptime(fromdate, format_str)
+                todate_obj = datetime.datetime.strptime(todate,format_str)
+                trax_details = Transcation.query.filter_by(ws_cust_id=cust_id,ws_acct_type=acct_type).all()
+                result = transcation_schema.dump(trax_details)
+                final_result =[]
+                for res in result:
+                    if res['ws_trxn_date'] >=str(fromdate_obj.date()) and res['ws_trxn_date'] <=str(todate_obj.date()):
+                        final_result.append(res)
+                return jsonify({'status':True,'result':final_result})
+
+            return jsonify({'status':False,'message':f"Account with id {data.get('ws_acct_id')} is deactivated, Please request for reactivation."})    
+
+
         return jsonify({'status':False,'message':'Not authorized'})
     
     return jsonify({'status':False,'message':'Not authenticated'})

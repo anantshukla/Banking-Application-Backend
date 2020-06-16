@@ -31,6 +31,7 @@ class Transcation(db.Model):
 	ws_src_typ=db.Column(db.String(1),unique=False,nullable=False)
 	ws_tgt_typ=db.Column(db.String(1),unique=False,nullable=False)
 	trxn_id=db.Column(db.Integer,primary_key=True)
+	description = db.Column(db.String, unique=False, nullable=False)
 
 class Customer_status(db.Model):
 	ws_ssn=ws_ssn=db.Column(db.Integer,unique=True, nullable=False)
@@ -77,6 +78,13 @@ class Customer_statusSchema(ma.Schema):
 class Account_statusSchema(ma.Schema):
 	class Meta:
 		fields = ('ws_cust_id','ws_acct_id','ws_acct_type','ws_status','ws_cust_msg','ws_cust_lup','acct_status_index')	
+
+class TranscationSchema(ma.Schema):
+	class Meta:
+		fields = ('ws_cust_id','ws_acct_type','ws_amt','ws_trxn_date','ws_src_typ','ws_tgt_typ','trxn_id','description')
+
+
+transcation_schema = TranscationSchema(many=True)
 
 account_schema = AccountSchema()
 accounts_schema = AccountSchema(many=True)			
