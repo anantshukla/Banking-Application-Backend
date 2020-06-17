@@ -81,7 +81,7 @@ class Account_statusSchema(ma.Schema):
 
 class TranscationSchema(ma.Schema):
 	class Meta:
-		fields = ('ws_cust_id','ws_acct_type','ws_amt','ws_trxn_date','ws_src_typ','ws_tgt_typ','trxn_id','description')
+		fields = ('trxn_id','description','ws_trxn_date','ws_amt','ws_cust_id','ws_acct_type','ws_src_typ','ws_tgt_typ')
 
 
 transcation_schema = TranscationSchema(many=True)
