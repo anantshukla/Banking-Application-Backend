@@ -6,6 +6,7 @@ import uuid
 from sqlalchemy import desc
 
 
+
 ########### Login API    ##############
 
 @app.route("/login",methods=["POST"])
@@ -165,29 +166,6 @@ def deletecustomer():
     
     return jsonify({'status':False,'message':'Not authenticated'})
 
-############ API for customer reactivation ################
-
-@app.route("/customerreactivate", methods=["POST"])
-def customerreactivate():
-    token = request.form.get('token')
-    user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
-    if user:
-        if user.user_role =='account executive':    # Checking authorization with user_role
-            if not Customer.query.filter_by(ws_ssn=request.form.get('ws_ssn')).first():
-                return jsonify({'status':False,'message':f"Customer with id {request.form.get('ws_ssn')} doesn't exist"})
-            if Customer_status.query.filter_by(ws_ssn=request.form.get('ws_ssn')).first().ws_status=='Active':    # Checking customer status
-                return jsonify({'status':False,'message':f"Customer with usn {request.form.get('ws_ssn')} is already active"})
-            
-            customer = Customer_status.query.filter_by(ws_ssn=request.form.get('ws_ssn')).first()
-            customer.ws_status = 'Active'
-            customer.ws_msg = "Customer reactivation complete"
-            customer.ws_lup = datetime.datetime.now()
-            db.session.commit() 
-            return jsonify({"status":True, "message":f"Customer with ssn {request.form.get('ws_ssn')} is reactivated"})
-
-        return jsonify({'status':False,'message':'Not authorized'})
-    
-    return jsonify({'status':False,'message':'Not authenticated'})
 
 ########### API for customer status ##############
 
@@ -207,29 +185,6 @@ def customerstatus():
         return jsonify({'status':False,'message':'Not authorized'})
     
     return jsonify({'status':False,'message':'Not authenticated'})
-
-########## API for deactive customer status ##############
-
-@app.route("/customersearchdistint", methods=["POST"])
-def customersearchdistint():
-    token = request.form.get('token')
-    user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
-    if user:
-        if user.user_role =='account executive':    # Checking authorization with user_role
-            cust_status = Customer_status.query.group_by(Customer_status.ws_ssn).distinct(Customer_status.ws_ssn).filter_by(ws_status="Deactive").all()
-            if cust_status:
-                result = customer_status_schema.dump(cust_status)    # Serializing database objects
-                return jsonify({'status':True,'result':result})
-
-            return jsonify({'status':False, 'message':"There is no deactivate Customer currently"})    
-    
-
-        return jsonify({'status':False,'message':'Not authorized'})
-    
-    return jsonify({'status':False,'message':'Not authenticated'})
-
-
-
 
 
 
@@ -254,7 +209,7 @@ def accountcreate():
                 acct.ws_cust_msg = "Account Activated"
                 acct.ws_lup = datetime.datetime.now()
                 db.session.commit()
-                return jsonify({'status':True,'message':"Account reactivated successfully"})
+                return jsonify({'status':True,'message':f"Account with id {acct.ws_acct_id} reactivated successfully"})
 
             if Account.query.filter_by(ws_cust_id=request.form.get('ws_cust_id'),ws_acct_type=account_type).first():   # Checking if for requested account is already exist with customer    
                 return jsonify({'status':False,'message':f"Customer with id {request.form.get('ws_cust_id')} already has {request.form.get('ws_acct_type')} account"})    # Returning the error message
@@ -343,53 +298,6 @@ def accountdelete():
     return jsonify({'status':False,'message':'Not authenticated'})
 
 
-############ API for account reactivation ###############
-
-@app.route("/accountreactivate", methods=["POST"])
-def accountreactivate():
-    token = request.form.get('token')
-    user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
-    if user:
-        if user.user_role =='account executive':    # Checking authorization with user_role
-            if not Account.query.filter_by(ws_acct_id=request.form.get('ws_acct_id')).first():
-                return jsonify({'status':False,'message':f"Account with id {request.form.get('ws_acct_id')} doesn't exist"})
-            if Account_status.query.filter_by(ws_acct_id=request.form.get('ws_acct_id')).first().ws_status=='Active':    # Checking customer status
-                return jsonify({'status':False,'message':f"Account with id {request.form.get('ws_acct_id')} is already active"})
-            
-            account = Account_status.query.filter_by(ws_acct_id=request.form.get('ws_acct_id')).first()
-            account.ws_status = "Active"     # Changing status from Deactive to Active
-            account.ws_cust_msg = "Account reactivated successfully"
-            account.ws_cust_lup = datetime.datetime.now()
-            db.session.commit() 
-            return jsonify({"status":True, "message":f"Account with id {request.form.get('ws_acct_id')} is reactivated"})
-
-        return jsonify({'status':False,'message':'Not authorized'})
-    
-    return jsonify({'status':False,'message':'Not authenticated'})
-
-############ API for distinct account search ###############
-
-@app.route("/accountsearchdistint", methods=["POST"])
-def accountsearchdistint():
-    token = request.form.get('token')
-    user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
-    if user:
-        if user.user_role =='account executive':    # Checking authorization with user_role
-            acct_status = Account_status.query.group_by(Account_status.ws_acct_id).distinct(Account_status.ws_acct_id).filter_by(ws_status="Deactive").all()
-            if acct_status:
-                result = account_status_schema.dump(acct_status)    # Serializing database objects
-                for res in result:
-                    if res['ws_acct_type'] =='s':
-                        res['ws_acct_type'] ="Saving"
-                    else:
-                        res['ws_acct_type']= "Current" 
-                return jsonify({'status':True,'result':result})
-
-            return jsonify({'status':False, 'message':"There is no deactivate account currently"})    
-
-        return jsonify({'status':False,'message':'Not authorized'})
-    
-    return jsonify({'status':False,'message':'Not authenticated'})
 
 ############# API for account status ###############
 
