@@ -4,12 +4,15 @@ from retailbank.models import Userstore, Customer, account_status_schema, transc
 import datetime
 import uuid
 from sqlalchemy import desc
+from flask_cors import CORS, cross_origin
 
-
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 ########### Login API    ##############
 
 @app.route("/login",methods=["POST"])
+@cross_origin()
 def login():
     # data = request.get_json()
     username=int(request.form.get('username'))
@@ -29,6 +32,7 @@ def login():
 ############# API for creating Customer #################
 
 @app.route("/createcustomer", methods=["POST"])
+@cross_origin()
 def createcustomer():
     token = request.form.get('token')
     user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
@@ -66,6 +70,7 @@ def createcustomer():
 ###############  API for customer search ##################
 
 @app.route("/customersearch", methods=["POST"])
+@cross_origin()
 def customersearch():
     token = request.form.get('token')
     user = Userstore.query.filter_by(token=token).first()    # Checking for authentication with token
@@ -105,6 +110,7 @@ def customersearch():
 ########### API for customer updation ###############
 
 @app.route("/customerupdate", methods=["POST"])
+@cross_origin()
 def customerupdate():
     token = request.form.get('token')
     user = Userstore.query.filter_by(token=token).first()    # Checking for authentication with token
@@ -140,6 +146,7 @@ def customerupdate():
 ############# API for Customer deletion #################
 
 @app.route("/customerdelete", methods=["POST"])
+@cross_origin()
 def deletecustomer():
     token = request.form.get('token')
     user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
@@ -170,6 +177,7 @@ def deletecustomer():
 ########### API for customer status ##############
 
 @app.route("/customerstatus", methods=["POST"])
+@cross_origin()
 def customerstatus():
     token = request.form.get('token')
     user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
@@ -191,6 +199,7 @@ def customerstatus():
 ############## API for account create  #################
 
 @app.route("/accountcreate", methods=["POST"])
+@cross_origin()
 def accountcreate():
     token = request.form.get('token')
     user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
@@ -239,6 +248,7 @@ def accountcreate():
 ########### API for account search ################
 
 @app.route("/accountsearch", methods=["POST"])
+@cross_origin()
 def accountsearch():
     token = request.form.get("token")
     user = Userstore.query.filter_by(token=token).first()    # Checking for authentication with token
@@ -275,6 +285,7 @@ def accountsearch():
 ############ API for account delete ##################
 
 @app.route("/accountdelete", methods=["POST"])
+@cross_origin()
 def accountdelete():
     token = request.form.get('token')
     user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
@@ -302,6 +313,7 @@ def accountdelete():
 ############# API for account status ###############
 
 @app.route("/accountstatus", methods=["POST"])
+@cross_origin()
 def accountstatus():
     token = request.form.get('token')
     user = Userstore.query.filter_by(token=token).first()       # Checking for authentication using token
@@ -324,6 +336,7 @@ def accountstatus():
 ############ API for deposit amount ################
 
 @app.route("/deposite", methods=["POST"])
+@cross_origin()
 def deposit():
     token = request.form.get("token")
     user = Userstore.query.filter_by(token=token).first()    # Checking for authentication with token
@@ -354,6 +367,7 @@ def deposit():
 ############ API for withdraw ##############
 
 @app.route("/withdraw", methods=["POST"])
+@cross_origin()
 def withdraw():
     token = request.form.get("token")
     user = Userstore.query.filter_by(token=token).first()    # Checking for authentication with token
@@ -401,6 +415,7 @@ def withdraw():
 
 ########### API for transfer money ###############
 @app.route("/transfer", methods=["POST"])
+@cross_origin()
 def transfer():
     token = request.form.get("token")
     user = Userstore.query.filter_by(token=token).first()    # Checking for authentication with token
@@ -486,7 +501,8 @@ def transfer():
 
 ############ API for Transaction ###############
 
-@app.route("/transactionhistory", methods=["POST"])    
+@app.route("/transactionhistory", methods=["POST"])
+@cross_origin()    
 def transactionhistory():
     token = request.form.get("token")
     user = Userstore.query.filter_by(token=token).first()    # Checking for authentication with token
